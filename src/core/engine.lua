@@ -29,6 +29,14 @@ function Engine:start()
     restore(a, a.db.saved)
     a.db.saved = nil
   end
+  local mp3, ogg = MEDIA .. "song.mp3", MEDIA .. "song.ogg"
+  local hasMp3, hasOgg = a.fileExists(mp3), a.fileExists(ogg)
+  if hasMp3 == hasOgg then
+    self.state = "corrupt"
+    a.showCorruptPopup()
+    return
+  end
+  self.songPath = hasMp3 and mp3 or ogg
   if not a.isTauren() then
     self.state = "dormant"
     return

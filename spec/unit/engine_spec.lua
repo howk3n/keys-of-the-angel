@@ -202,6 +202,58 @@ describe("Engine", function()
     end)
   end)
 
+  describe("song file", function()
+    it("uses mp3 when only mp3 exists", function()
+      activeAtFull()
+      assert.equals(Fake.MP3, a.played[1].path)
+    end)
+
+    it("uses ogg when only ogg exists", function()
+      a.files = { [Fake.OGG] = true }
+      activeAtFull()
+      assert.equals(Fake.OGG, a.played[1].path)
+    end)
+
+    local function assertCorrupt()
+      e:start()
+      assert.equals("corrupt", e.state)
+      assert.equals(1, a.popups)
+      a.stackCount = 30
+      run(e, 60)
+      e:onSoundFinished(101)
+      e:shutdown()
+      assert.equals(0, #a.played)
+      assert.equals(0, #a.setCalls)
+    end
+
+    it("both files means corrupt", function()
+      a.files = { [Fake.MP3] = true, [Fake.OGG] = true }
+      assertCorrupt()
+    end)
+
+    it("no file means corrupt", function()
+      a.files = {}
+      assertCorrupt()
+    end)
+
+    it("corrupt still restores leftover settings", function()
+      a.files = {}
+      a.db.saved = { dialog = 0.7, music = 0.3, enableDialog = "1" }
+      e:start()
+      assert.equals("corrupt", e.state)
+      assert.near(0.7, a.num(DIALOG), 1e-6)
+      assert.is_nil(a.db.saved)
+    end)
+
+    it("reports corruption on non-Tauren characters too", function()
+      a.files = {}
+      a.tauren = false
+      e:start()
+      assert.equals("corrupt", e.state)
+      assert.equals(1, a.popups)
+    end)
+  end)
+
   it("dormant for non-Tauren", function()
     a.tauren = false
     e:start()
