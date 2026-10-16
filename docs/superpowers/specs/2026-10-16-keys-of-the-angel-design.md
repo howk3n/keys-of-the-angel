@@ -75,7 +75,8 @@ Let `s` be the current Plainsrunning stack count (0 when the aura is absent).
 
 ### Restoring settings
 
-- The captured values (`userDialog`, `userMusic`, and the Dialog enable toggle) are saved in SavedVariables the moment the addon takes over.
+- The captured values (`userDialog`, `userMusic`, and the Dialog enable toggle) are saved in SavedVariables the
+  moment the addon takes over.
 - On logout the addon writes them back.
 - On login, if saved values are still present (a crash or forced quit skipped the logout), restore them before
   anything else.
