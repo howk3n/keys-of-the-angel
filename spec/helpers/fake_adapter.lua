@@ -34,6 +34,11 @@ function M.new()
     a.stopped[#a.stopped + 1] = h
   end
   function a.showCorruptPopup() a.popups = a.popups + 1 end
+  -- Simulates the game reporting that a sound ended.
+  function a.finish(engine, h)
+    a.active[h] = nil
+    engine:onSoundFinished(h)
+  end
   function a.activeCount()
     local n = 0
     for _ in pairs(a.active) do n = n + 1 end

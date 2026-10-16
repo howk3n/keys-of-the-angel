@@ -146,6 +146,62 @@ describe("Engine", function()
     assert.equals(0, #a.played)
   end)
 
+  describe("looping", function()
+    it("restarts the song when it finishes", function()
+      activeAtFull()
+      local h1 = a.played[1].handle
+      a.finish(e, h1)
+      assert.equals(2, #a.played)
+      assert.equals(Fake.MP3, a.played[2].path)
+      assert.equals(a.played[2].handle, e.handle)
+    end)
+
+    it("restarts even while silent", function()
+      activeAtFull()
+      a.stackCount = 0
+      run(e, 10)
+      a.finish(e, e.handle)
+      assert.equals(2, #a.played)
+    end)
+
+    it("ignores finish for stale handles", function()
+      activeAtFull()
+      local h1 = a.played[1].handle
+      a.finish(e, h1)
+      e:onSoundFinished(h1)
+      assert.equals(2, #a.played)
+    end)
+
+    it("never two copies", function()
+      activeAtFull()
+      local h1 = a.played[1].handle
+      a.finish(e, h1)
+      e:onSoundFinished(h1)
+      a.finish(e, e.handle)
+      run(e, 5)
+      assert.equals(1, a.activeCount())
+    end)
+
+    it("retries on the next tick when play fails", function()
+      activeAtFull()
+      local play = a.play
+      a.play = function() return nil end
+      a.finish(e, e.handle)
+      assert.is_nil(e.handle)
+      a.play = play
+      run(e, 0.1)
+      assert.not_nil(e.handle)
+      assert.equals(1, a.activeCount())
+    end)
+
+    it("ignores finish signals before the first trigger", function()
+      e:start()
+      e:onSoundFinished(5)
+      run(e, 1)
+      assert.equals(0, #a.played)
+    end)
+  end)
+
   it("dormant for non-Tauren", function()
     a.tauren = false
     e:start()

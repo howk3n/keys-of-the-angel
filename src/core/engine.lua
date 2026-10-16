@@ -90,6 +90,7 @@ function Engine:tick(dt)
     self:takeOver()
   end
   if self.state ~= "active" then return end
+  if not self.handle then self.handle = self.a.play(self.songPath) end
   self:adoptSliderChanges()
   local stacks = self:readStacks()
   if stacks then
@@ -101,6 +102,11 @@ function Engine:tick(dt)
     if self.current >= 1 then self.firstFade = false end
   end
   self:apply()
+end
+
+function Engine:onSoundFinished(handle)
+  if self.state ~= "active" or handle == nil or handle ~= self.handle then return end
+  self.handle = self.a.play(self.songPath)
 end
 
 function Engine:shutdown()
