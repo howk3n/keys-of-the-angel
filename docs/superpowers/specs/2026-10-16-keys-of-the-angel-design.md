@@ -15,8 +15,8 @@ The song is the author's original work, so it ships inside the addon and the add
 
 - Song starts the first time the player reaches 30 Plainsrunning stacks in a session, then follows the stack count.
 - Song volume and game music volume crossfade smoothly with no audible steps.
-- Any song file loops fully (start to finish, no cut-off, no gap) whatever its length, including a file a player
-  swaps in.
+- Any song file loops fully (start to finish, no cut-off, at most a short pause before it restarts) whatever its
+  length, including a file a player swaps in.
 - The player's own sound settings are never left changed: not after logout, not after a crash.
 - Works out of the box: install, play a Tauren, run.
 
@@ -31,7 +31,7 @@ The song is the author's original work, so it ships inside the addon and the add
 
 - The player's Music or Dialog volume left wrong after logout or a crash.
 - Audible stepping, clicks or abrupt cuts in volume during normal play.
-- A swapped-in song that gets cut off or leaves a silent gap before looping.
+- A swapped-in song that gets cut off, or pauses longer than about a quarter second before looping.
 - Lua error spam, or two copies of the song playing at once.
 - Bundling any music the author doesn't hold the rights to.
 
@@ -58,11 +58,16 @@ Let `s` be the current Plainsrunning stack count (0 when the aura is absent).
 - **After the first trigger** the song never stops for the rest of the session. Below 27 stacks it keeps playing at
   volume 0, so when stacks climb back it fades in mid-song, wherever the song is.
 - **Crossfade:** game music plays at `(1 - x)` of the player's own music volume.
+- **No grace period** (author's decision): the song is special, only for maximum and near-maximum speed. Standing
+  still drains 1 stack per second, so a 3-second stop at full speed fades it out, and it takes 15 s of running
+  (27 → 30) to come back. That is intended.
 - **Session** means since login or the last UI reload. After a reload the player must reach 30 stacks again.
 
 ### Sound mechanics (decided with the author)
 
-- The song plays on the **Dialog** channel. Song volume is applied as `Sound_DialogVolume = x * userDialog`.
+- The song is treated as music: its full volume follows the player's **Music** slider (author's decision), so at full
+  speed it is exactly as loud as zone music was.
+- It plays on the **Dialog** channel, so it can fade separately: `Sound_DialogVolume = x * userMusic`.
 - Game music stays on the **Music** channel: `Sound_MusicVolume = (1 - x) * userMusic`.
 - `userDialog` and `userMusic` are the player's real settings, captured before the addon first changes them.
 - Accepted side effect (author approved): while the song is faded down, all other Dialog sounds (NPC voice lines and
@@ -70,12 +75,15 @@ Let `s` be the current Plainsrunning stack count (0 when the aura is absent).
 
 ### Restoring settings
 
-- The captured `userDialog`/`userMusic` values are saved in SavedVariables the moment the addon takes over.
+- The captured values (`userDialog`, `userMusic`, and the Dialog enable toggle) are saved in SavedVariables the moment the addon takes over.
 - On logout the addon writes them back.
 - On login, if saved values are still present (a crash or forced quit skipped the logout), restore them before
   anything else.
 - If the player moves the Music or Dialog slider while the addon is in control, treat the new value as their new real
   setting (my call).
+- The addon keeps fading even while the Sound settings panel is open (author's decision), so the sliders show the
+  faded values. The README warns about this: the sliders move on their own while the addon is active, and the real
+  values come back on logout.
 - Caveat: WoW writes SavedVariables only on logout or `/reload`, never on a crash, so the crash path only helps if a
   reload happened after takeover. Whether a crash leaves faded volumes behind depends on when the client writes sound
   CVars to `WTF\Config.wtf`. That is a gating probe (see "Verify first"); if faded values survive a crash, stop and
@@ -109,7 +117,13 @@ If neither works, stop and bring it back to the author. A length typed into a fi
 - **Loading screens:** if the game stops the song during a load, restart it quietly at the volume the current stacks
   call for (it restarts from the beginning; there is no seek).
 - **Non-Tauren characters:** the addon stays dormant (race ID 6 is Tauren).
-- **Player has Dialog muted or at 0:** the song is silent. Respect it; mention it in the README.
+- **Game music turned off** (`Sound_EnableMusic` 0, the "Enable Music" checkbox or Ctrl+M): the song **still plays**
+  at the Music slider level (author's decision: installing the addon is the choice to hear the song). Zone music stays
+  off. Only a Music slider at 0 silences the song; the README says so.
+- **Dialog channel turned off** (`Sound_EnableDialog` 0): by the same logic, turn it on while the addon controls the
+  channel and restore it with the other settings (my call). While in control, the player's own Dialog slider is
+  ignored; NPC voices play at the song's current level.
+- **All sound off** (`Sound_EnableAllSound` 0 or Master at 0): respect it; nothing plays.
 - **First start crossfade:** at the first trigger, music fades out and the song in over about a second rather than
   cutting instantly (my call).
 
@@ -117,21 +131,30 @@ If neither works, stop and bring it back to the author. A length typed into a fi
 
 - Bundled song: the author's original, as an `.mp3`, so `.mp3` must work. Until the author supplies it, build and test
   with a placeholder tone.
-- Location and name: `media/song.mp3` or `media/song.ogg`. The addon should accept either so nobody has to convert,
-  if Forever lets the addon tell a missing file apart (see "Verify first"). Otherwise pick one format and say so in the
-  README.
+- Location and name: `media/song.mp3` or `media/song.ogg`. Both formats must be supported (author's decision), which
+  relies on Forever letting the addon tell a missing file apart (see "Verify first"; if it can't, bring it back to the
+  author).
+- **Both present means a corrupted install** (author's decision): if both `song.mp3` and `song.ogg` exist, the addon
+  does not work at all (plays nothing, touches no settings) and shows a popup at every login until fixed, roughly:
+  "Keys of the Angel is damaged. Please reinstall it: use your addon manager's reinstall option, or delete the
+  `KeysOfTheAngel` folder from `Interface\AddOns` and install it again. Then restart the game." It does not explain
+  which file to delete. (A manual unzip over the old folder would not remove the extra file, hence the wording.)
+- **Neither present** is treated the same way: corrupted, same popup (my call).
+- The addon can only check these two names; it cannot list or delete files. The README's swap instructions say to
+  replace the file so only one song file exists.
 - **README instructions for swapping** (no other user-facing configuration exists):
   1. Replace the file in the addon's `media` folder with yours, same name.
   2. Fully restart the game (WoW only sees new files after a restart).
   3. Updating the addon puts the original song back; re-copy yours after each update.
-  4. The song plays on the Dialog channel, so Dialog volume must be on.
+  4. The song's loudness follows the Music slider (even with game music turned off); a Music slider at 0 silences it.
 
 ## Verify first (probe before building)
 
 Run a throwaway probe like `KoaProbe` (still in the AddOns folder) and record results in the notes doc:
 
 1. `SOUNDKIT_FINISHED` exists and fires for `PlaySoundFile` handles; or `C_Sound.IsPlaying` exists and works.
-2. `PlaySoundFile` on a missing file: does `willPlay` come back false/nil?
+2. `PlaySoundFile` on a missing file: does `willPlay` come back false/nil? Can a file's existence be checked at
+   startup without an audible blip (e.g. play and `StopSound` in the same frame)?
 3. Does a `PlaySoundFile` sound survive a loading screen? A `/reload`? (If it survives a reload, the addon must stop
    the old copy, e.g. by saving the handle in SavedVariables, to avoid two copies.)
 4. Are aura fields or `GetUnitSpeed` secret in combat and in instances?
@@ -152,11 +175,23 @@ Any answer that breaks a goal above goes back to the author before building arou
 - Addon folder and `.toc` name: `KeysOfTheAngel`. SavedVariables: `KeysOfTheAngelDB` (account-wide).
 - Packaging: BigWigs packager via the existing `.pkgmeta`; published on CurseForge.
 
+## License
+
+MIT for the whole repository, the song included (author's decision: no separate song rights). A `LICENSE` file at
+the root, copyright holder `howk3n` (my call, from the GitHub account; the author may prefer a real name).
+
 ## Scope of the work
 
 The work runs all the way to a public CurseForge release: the working addon, the README, and a tag-triggered release
-workflow (BigWigs packager, CurseForge project and API token). The first release waits for the author's song file;
-nothing ships with the placeholder tone.
+workflow. The first release waits for the author's song file; nothing ships with the placeholder tone.
+
+- **CurseForge only** (author's decision), in its "Forever" game flavor (it exists: thousands of projects tagged for
+  client 1.60.1).
+- Pushing a tag like `v1.0.0` runs a GitHub Actions workflow with the BigWigs packager, which uploads to CurseForge.
+- The author creates the CurseForge project, supplies its project ID (for `## X-Curse-Project-ID` in the `.toc`), and
+  stores a CurseForge API token as a GitHub repository secret.
+- First release `v1.0.0`, after the real mp3 is in and an in-game test passes.
+- Repository: https://github.com/howk3n/keys-of-the-angel
 
 ## Left to the builder
 
