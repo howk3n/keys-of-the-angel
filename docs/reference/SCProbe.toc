@@ -1,0 +1,4 @@
+## Interface: 16001
+## Title: SCProbe (throwaway StreetCred API probe)
+## SavedVariables: SCProbeDB
+SCProbe.lua

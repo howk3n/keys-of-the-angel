@@ -1,0 +1,9 @@
+package-as: KljuceviOdAndjela
+
+ignore:
+  - docs
+  - .github
+  - .claude
+  - CLAUDE.md
+  - .luacheckrc
+  - .gitignore
