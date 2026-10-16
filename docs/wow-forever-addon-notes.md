@@ -22,7 +22,7 @@ WoW Forever beta client; "Retail" means it is how modern Retail WoW behaves and 
 
 - **Link the repo into the game** instead of copying (Windows `cmd`, not Git Bash; the AddOns folder name must
   match the `.toc` file name):
-  `mklink /J "D:\World of Warcraft\_classic_beta_\Interface\AddOns\KljuceviOdAndjela" "E:\Projects\kljucevi-od-andjela"`
+  `mklink /J "D:\World of Warcraft\_classic_beta_\Interface\AddOns\KeysOfTheAngel" "E:\Projects\keys-of-the-angel"`
 - `/reload` picks up Lua and `.toc` edits. **New files** (Lua added to the `.toc`, or new sound files) need a full
   client restart before the game can see them (Retail behavior).
 - LuaJIT for running Lua outside the game: `C:\Users\VenaGe\AppData\Local\Programs\LuaJIT\bin` (not on PATH in
@@ -66,7 +66,7 @@ WoW Forever beta client; "Retail" means it is how modern Retail WoW behaves and 
 - Some Retail globals are gone or moved (for example `GetLootMethod` → `C_PartyInfo.GetLootMethod`). Check with the
   probe before relying on one.
 
-## Kljucevi od Andjela probe results (verified on the beta, build 1.60.1.70425, October 2026)
+## Keys of the Angel probe results (verified on the beta, build 1.60.1.70425, October 2026)
 
 Probe: `KoaProbe` (throwaway, lived in the AddOns folder).
 

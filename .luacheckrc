@@ -8,4 +8,4 @@ read_globals = {
   "CreateFrame", "UIParent", "C_Timer", "C_UnitAuras", "GetUnitSpeed", "PlayMusic", "StopMusic", "PlaySoundFile",
   "StopSound", "InCombatLockdown", "IsMounted", "UnitOnTaxi", "issecretvalue", "Settings", "DEFAULT_CHAT_FRAME",
 }
-globals = { "KljuceviOdAndjelaDB", "SlashCmdList", "SLASH_KLJUCEVIODANDJELA1" }
+globals = { "KeysOfTheAngelDB", "SlashCmdList", "SLASH_KEYSOFTHEANGEL1" }
