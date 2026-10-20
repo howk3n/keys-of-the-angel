@@ -40,8 +40,9 @@ function ns.NewAdapter(db)
   function a.setCVar(name, value) SetCVar(name, tostring(value)) end
 
   -- There is no file API; a missing file makes PlaySoundFile return no handle. Stopping in the same frame is silent.
+  -- Master, because a disabled Dialog channel reports every file as missing.
   function a.fileExists(path)
-    local willPlay, handle = PlaySoundFile(path, CHANNEL)
+    local willPlay, handle = PlaySoundFile(path, "Master")
     if handle then StopSound(handle) end
     return (willPlay and handle) and true or false
   end

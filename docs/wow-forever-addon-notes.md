@@ -129,6 +129,9 @@ Probe: `KoaProbe` (throwaway, lived in the AddOns folder).
   and the saved Music setting drained to 0. Compare against what `GetCVar` reports right after `SetCVar`, with a
   tolerance above half a 5% step.
 
-Still open: whether a loading screen stops sounds; whether `PlaySoundFile` reports `willPlay` for an existing file
-on the Dialog channel with `Sound_EnableDialog` 0 or the Dialog slider at 0; whether volume exactly 0 stops a sound
-without alt-tabbing; aura behavior when mounting, dying or on a taxi.
+- **Disabled channel:** with `Sound_EnableDialog` 0, `PlaySoundFile` on `Dialog` returns `willPlay` nil for an
+  existing file; on `Master` it returns true. With the Dialog slider at 0 it still returns true. Check file existence
+  on `Master`.
+
+Still open: whether a loading screen stops sounds; whether volume exactly 0 stops a sound without alt-tabbing; aura
+behavior when mounting, dying or on a taxi.
