@@ -103,6 +103,20 @@ describe("Engine", function()
     assert.near(0.8, a.num(MUSIC), 1e-6)
   end)
 
+  it("does not mistake the game rounding volumes for a slider move", function()
+    a.decimals = 2
+    activeAtFull()
+    a.stackCount = 27
+    run(e, 5)
+    a.stackCount = 30
+    run(e, 20)
+    assert.equals(0.4, a.db.saved.music)
+    assert.equals(1.0, a.db.saved.dialog)
+    assert.near(0.4, a.num(DIALOG), 0.01)
+    e:shutdown()
+    assert.near(0.4, a.num(MUSIC), 1e-6)
+  end)
+
   it("restores on shutdown", function()
     activeAtFull()
     e:shutdown()

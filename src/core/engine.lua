@@ -64,7 +64,7 @@ function Engine:takeOver()
   }
   a.db.saved = self.saved
   a.setCVar(ENABLE_DIALOG, "1")
-  self.written = {}
+  self.written, self.asked = {}, {}
   self.current = 0
   self.firstFade = true
   self:play()
@@ -87,11 +87,14 @@ function Engine:adoptSliderChanges()
   end
 end
 
+-- The game rounds stored volumes, so remember what it reports back, not what we asked for; otherwise the rounding
+-- looks like a slider move.
 function Engine:write(name, key, value)
-  local w = self.written
-  if w[key] == nil or math.abs(w[key] - value) > WRITE_EPSILON then
+  local asked, w = self.asked, self.written
+  if asked[key] == nil or math.abs(asked[key] - value) > WRITE_EPSILON then
     self.a.setCVar(name, value)
-    w[key] = value
+    asked[key] = value
+    w[key] = tonumber(self.a.getCVar(name)) or value
   end
 end
 

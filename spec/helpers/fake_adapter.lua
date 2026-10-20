@@ -18,6 +18,12 @@ function M.new()
   end
   function a.getCVar(name) return a.cvars[name] end
   function a.setCVar(name, value)
+    local v = tonumber(value)
+    if a.decimals and v then
+      local m = 10 ^ a.decimals
+      v = math.floor(v * m + 0.5) / m
+      value = v
+    end
     a.cvars[name] = tostring(value)
     a.setCalls[#a.setCalls + 1] = { name = name, value = value }
   end
