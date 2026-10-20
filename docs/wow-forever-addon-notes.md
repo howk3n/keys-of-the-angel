@@ -88,7 +88,23 @@ Probe: `KoaProbe` (throwaway, lived in the AddOns folder).
 - Defaults seen: `Sound_MusicVolume` 0.4, `Sound_AmbienceVolume` 0.6, `Sound_DialogVolume` 1.0, others 1.0.
 - `C_Console.GetAllCommands` and `Enum.SoundChannel` are **missing**.
 - Supported audio formats (Retail, not re-checked): `.ogg` and `.mp3` inside the addon folder.
+- `PlaySoundFile` doesn't loop.
 
-Still open: secret values in combat and instances; whether sounds survive loading screens; aura behavior when
-walking, mounting, dying or on a taxi; `PlaySoundFile` looping (Retail: it doesn't, so a loop needs the track
-length and a timer).
+### Round 2 (build 1.60.1.70450, 2026-10-20)
+
+- **Song end:** `SOUNDKIT_FINISHED` registers but never fired for a `PlaySoundFile` sound. `C_Sound.IsPlaying(handle)`
+  exists and turned false 60.15 s into a 60 s file, so poll it to detect the end.
+- **Volume 0 stops sounds.** With `Sound_DialogVolume` at 0, `C_Sound.IsPlaying` went false within 10 s (once
+  immediately), and a fade to 0 and back up in combat never brought the sound back. Never write exactly 0.
+- **Music at 0** for 30 s: zone music came back when the volume was restored.
+- **`/reload`:** a sound keeps playing through it, and the old handle still reports `IsPlaying` true afterwards.
+- **Crash:** `Sound_DialogVolume` 0.5 and `Sound_MusicVolume` 0.1 set right before killing `Wow.exe` were **not** in
+  `WTF\Config.wtf` afterwards, so a `SetCVar` isn't written to disk right away. (Config.wtf's last write was
+  9 s after the preceding logout, around the next login.)
+- **Logout:** a `SetCVar` in `PLAYER_LOGOUT` sticks (Config.wtf held the restored value).
+- **Combat:** `GetUnitSpeed` values are **secret** in combat. A Plainsrunning scan by aura index finds nothing in
+  combat, probably because the aura name is secret and can't be compared.
+
+Still open: whether `GetPlayerAuraBySpellID(1299038)` is readable in combat; whether a low floor (0.001) keeps a
+sound alive; a silent way to check that a file exists; whether a loading screen stops sounds; aura behavior when
+mounting, dying or on a taxi.
