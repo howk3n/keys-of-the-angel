@@ -10,6 +10,6 @@ files["spec/"] = {
 -- The WoW layer may use the game API; the core may not.
 local wow = {
   "CreateFrame", "C_Timer", "C_UnitAuras", "C_Sound", "GetTime", "GetCVar", "SetCVar", "C_CVar", "PlaySoundFile",
-  "StopSound", "UnitRace", "issecretvalue", "StaticPopupDialogs", "StaticPopup_Show", "UIParent", "OKAY",
+  "StopSound", "UnitRace", "issecretvalue", "StaticPopup_Show", "UIParent", "OKAY",
 }
-files["src/wow/"] = { read_globals = wow, globals = { "KeysOfTheAngelDB" } }
+files["src/wow/"] = { read_globals = wow, globals = { "KeysOfTheAngelDB", "StaticPopupDialogs" } }
