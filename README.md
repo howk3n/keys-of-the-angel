@@ -19,6 +19,8 @@ There are no settings. To turn it off, disable the addon in the AddOns list (Esc
 - The song's loudness follows your **Music** volume slider, so at full speed it's as loud as your zone music was.
   It plays even if you've turned game music off; only a Music slider at 0 silences it.
 - The song plays on the **Dialog** sound channel. While the song is faded down, NPC voice lines are quiet too.
+- Alt-tabbing out of the game stops all sound, so the song starts over from the beginning when you come back. To
+  keep it playing, turn on the game's sound-in-background option in the Sound settings.
 
 > **Heads-up:** while the addon is active it moves your Music and Dialog volumes itself. If you open the Sound
 > settings, the sliders may sit at odd positions and move on their own. That's expected. Your real settings come
