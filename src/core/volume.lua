@@ -26,5 +26,7 @@ function Volume.step(current, target, dt, upRate, downRate)
 end
 
 function Volume.levels(x, userMusic, floor)
-  return math.max(x, floor) * userMusic, math.max(1 - x, floor) * userMusic
+  -- The floor is an absolute CVar value (0 stops sounds); a Music slider at 0 still means silence.
+  local low = math.min(floor, userMusic)
+  return math.max(x * userMusic, low), math.max((1 - x) * userMusic, low)
 end
