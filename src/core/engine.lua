@@ -10,8 +10,9 @@ local DIALOG, MUSIC, ENABLE_DIALOG = "Sound_DialogVolume", "Sound_MusicVolume", 
 local ALL_SOUND = "Sound_EnableAllSound"
 local MEDIA = "Interface\\AddOns\\" .. addonName .. "\\media\\"
 local TRIGGER_STACKS = 30
--- A slider moved by the player differs from what we last wrote by more than this.
-local SLIDER_TOLERANCE = 0.001
+-- A slider moved by the player differs from what we last wrote by more than this. An open Sound panel snaps
+-- volumes to 5% steps, so anything within half a step is the panel, not the player.
+local SLIDER_TOLERANCE = 0.03
 local WRITE_EPSILON = 1e-4
 
 function Engine.new(adapter)
@@ -90,11 +91,14 @@ end
 function Engine:adoptSliderChanges()
   local a, w = self.a, self.written
   local music, dialog = tonumber(a.getCVar(MUSIC)), tonumber(a.getCVar(DIALOG))
+  -- Clearing `asked` forces the next apply to overwrite the slider with the crossfade level.
   if w.music and music and math.abs(music - w.music) > SLIDER_TOLERANCE then
     self.saved.music = music
+    self.asked.music = nil
   end
   if w.dialog and dialog and math.abs(dialog - w.dialog) > SLIDER_TOLERANCE then
     self.saved.dialog = dialog
+    self.asked.dialog = nil
   end
 end
 

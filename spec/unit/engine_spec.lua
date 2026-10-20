@@ -103,6 +103,35 @@ describe("Engine", function()
     assert.near(0.8, a.num(MUSIC), 1e-6)
   end)
 
+  it("keeps zone music down after a Music slider move at full speed", function()
+    a.floor = 0.001
+    activeAtFull()
+    a.cvars[MUSIC] = "0.8"
+    run(e, 0.1)
+    assert.near(0.8, a.num(DIALOG), 1e-6)
+    assert.near(0.001, a.num(MUSIC), 1e-6)
+  end)
+
+  it("ignores the settings panel snapping volumes to 5% steps", function()
+    local function snap(name) a.cvars[name] = tostring(math.floor(a.num(name) / 0.05 + 0.5) * 0.05) end
+    local function runSnapping(seconds)
+      for _ = 1, seconds * 10 do
+        e:tick(0.1)
+        snap(DIALOG)
+        snap(MUSIC)
+      end
+    end
+    e:start()
+    a.stackCount = 30
+    runSnapping(2)
+    a.stackCount = 27
+    runSnapping(5)
+    a.stackCount = 30
+    runSnapping(20)
+    assert.equals(0.4, a.db.saved.music)
+    assert.equals(1.0, a.db.saved.dialog)
+  end)
+
   it("does not mistake the game rounding volumes for a slider move", function()
     a.decimals = 2
     activeAtFull()
