@@ -194,6 +194,37 @@ describe("Engine", function()
       assert.equals(1, a.activeCount())
     end)
 
+    it("restarts when the game stops the song", function()
+      activeAtFull()
+      a.active[e.handle] = nil
+      run(e, 0.1)
+      assert.equals(2, #a.played)
+      assert.equals(1, a.activeCount())
+    end)
+
+    it("remembers the playing handle for after a reload", function()
+      activeAtFull()
+      a.finish(e, e.handle)
+      assert.equals(e.handle, a.db.handle)
+    end)
+
+    it("stops a copy left over from a reload", function()
+      a.db.handle = 55
+      a.active[55] = true
+      e:start()
+      assert.same({ 55 }, a.stopped)
+      assert.is_nil(a.db.handle)
+      assert.equals(0, a.activeCount())
+    end)
+
+    it("stops the song on shutdown", function()
+      activeAtFull()
+      local h = e.handle
+      e:shutdown()
+      assert.same({ h }, a.stopped)
+      assert.equals(0, a.activeCount())
+    end)
+
     it("ignores finish signals before the first trigger", function()
       e:start()
       e:onSoundFinished(5)

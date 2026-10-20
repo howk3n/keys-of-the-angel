@@ -33,6 +33,7 @@ function M.new()
     a.active[h] = nil
     a.stopped[#a.stopped + 1] = h
   end
+  function a.isPlaying(h) return a.active[h] == true end
   function a.showCorruptPopup() a.popups = a.popups + 1 end
   -- Simulates the game reporting that a sound ended.
   function a.finish(engine, h)

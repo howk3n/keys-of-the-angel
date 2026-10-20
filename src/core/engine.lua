@@ -25,6 +25,11 @@ end
 
 function Engine:start()
   local a = self.a
+  -- A sound keeps playing through /reload, so the previous session's copy is still running.
+  if a.db.handle then
+    a.stop(a.db.handle)
+    a.db.handle = nil
+  end
   if a.db.saved then
     restore(a, a.db.saved)
     a.db.saved = nil
@@ -62,8 +67,13 @@ function Engine:takeOver()
   self.written = {}
   self.current = 0
   self.firstFade = true
-  self.handle = a.play(self.songPath)
+  self:play()
   self.state = "active"
+end
+
+function Engine:play()
+  self.handle = self.a.play(self.songPath)
+  self.a.db.handle = self.handle
 end
 
 function Engine:adoptSliderChanges()
@@ -98,7 +108,11 @@ function Engine:tick(dt)
     self:takeOver()
   end
   if self.state ~= "active" then return end
-  if not self.handle then self.handle = self.a.play(self.songPath) end
+  if not self.handle then
+    self:play()
+  elseif not self.a.isPlaying(self.handle) then
+    self:onSoundFinished(self.handle)
+  end
   self:adoptSliderChanges()
   local stacks = self:readStacks()
   if stacks then
@@ -114,11 +128,12 @@ end
 
 function Engine:onSoundFinished(handle)
   if self.state ~= "active" or handle == nil or handle ~= self.handle then return end
-  self.handle = self.a.play(self.songPath)
+  self:play()
 end
 
 function Engine:shutdown()
   if self.state ~= "active" then return end
+  if self.handle then self.a.stop(self.handle) end
   self:adoptSliderChanges()
   restore(self.a, self.saved)
   self.a.db.saved = nil
