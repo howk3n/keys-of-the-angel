@@ -8,6 +8,7 @@ own soundtrack kicks in.
 - The first time Plainsrunning reaches **30 stacks** in a session, the song starts and the zone music fades out.
 - After that, the song follows your speed: full volume at 30 stacks, fading to silent at 27. Slow down and the zone
   music comes back; speed back up and the song fades in again, right where it left off.
+- Entering combat removes Plainsrunning, so the song fades out when a fight starts.
 - The song keeps looping for the rest of the session.
 - It only does anything on Tauren characters.
 
