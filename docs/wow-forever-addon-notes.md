@@ -118,6 +118,17 @@ Probe: `KoaProbe` (throwaway, lived in the AddOns folder).
   secret), and it rebuilt from 1 stack after combat.
 - **`/reload`** after `persist`: a `SetCVar` in `PLAYER_LOGOUT` persisted (`PERSIST CHECK: expected 1 got 1`).
 
+### Round 4 and the in-game checklist (same build, 2026-10-20)
+
+- **File check timing:** `PlaySoundFile` reports `willPlay` true for an existing file at `PLAYER_LOGIN`, at
+  `PLAYER_ENTERING_WORLD` and while alt-tabbed. With `Sound_EnableAllSound` 0 it returns nil for **every** file.
+- **Background sound** is `Sound_EnableSoundWhenGameIsInBG` (0 on the author's client).
+- **Volume storage:** CVars are stored as float32 (`0.4` reads back `0.40000000596…`). `0.0004` read back as `0`.
+  One reading of `0.3667` came back `0.35`, which suggests the Sound panel snapping to 5% steps.
+- **Read-back matters:** comparing `GetCVar` against the exact value written made rounding look like a slider move,
+  and the saved Music setting drained to 0. Compare against what `GetCVar` reports right after `SetCVar`, with a
+  tolerance above half a 5% step.
+
 Still open: whether a loading screen stops sounds; whether `PlaySoundFile` reports `willPlay` for an existing file
-during the login loading screen, with the game in the background, or with sound turned off; aura behavior when
-mounting, dying or on a taxi.
+on the Dialog channel with `Sound_EnableDialog` 0 or the Dialog slider at 0; whether volume exactly 0 stops a sound
+without alt-tabbing; aura behavior when mounting, dying or on a taxi.
