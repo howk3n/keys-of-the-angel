@@ -290,6 +290,31 @@ describe("Engine", function()
       assert.is_nil(a.db.saved)
     end)
 
+    it("waits for game sound before checking files", function()
+      a.cvars.Sound_EnableAllSound = "0"
+      e:start()
+      a.stackCount = 30
+      run(e, 5)
+      assert.equals(0, a.popups)
+      assert.equals(0, #a.played)
+      a.cvars.Sound_EnableAllSound = "1"
+      run(e, 1.2)
+      assert.equals(0, a.popups)
+      assert.equals(Fake.MP3, a.played[#a.played].path)
+      assert.equals("active", e.state)
+    end)
+
+    it("reports a broken install once game sound is on", function()
+      a.files = {}
+      a.cvars.Sound_EnableAllSound = "0"
+      e:start()
+      assert.equals(0, a.popups)
+      a.cvars.Sound_EnableAllSound = "1"
+      run(e, 0.1)
+      assert.equals(1, a.popups)
+      assert.equals("corrupt", e.state)
+    end)
+
     it("reports corruption on non-Tauren characters too", function()
       a.files = {}
       a.tauren = false

@@ -7,6 +7,7 @@ Engine.__index = Engine
 ns.Engine = Engine
 
 local DIALOG, MUSIC, ENABLE_DIALOG = "Sound_DialogVolume", "Sound_MusicVolume", "Sound_EnableDialog"
+local ALL_SOUND = "Sound_EnableAllSound"
 local MEDIA = "Interface\\AddOns\\" .. addonName .. "\\media\\"
 local TRIGGER_STACKS = 30
 -- A slider moved by the player differs from what we last wrote by more than this.
@@ -34,6 +35,16 @@ function Engine:start()
     restore(a, a.db.saved)
     a.db.saved = nil
   end
+  -- With all sound off the game reports every file as missing, so the check waits until sound is back.
+  if a.getCVar(ALL_SOUND) == "0" then
+    self.state = "nosound"
+    return
+  end
+  self:checkFiles()
+end
+
+function Engine:checkFiles()
+  local a = self.a
   local mp3, ogg = MEDIA .. "song.mp3", MEDIA .. "song.ogg"
   local hasMp3, hasOgg = a.fileExists(mp3), a.fileExists(ogg)
   if hasMp3 == hasOgg then
@@ -105,6 +116,10 @@ function Engine:apply()
 end
 
 function Engine:tick(dt)
+  if self.state == "nosound" then
+    if self.a.getCVar(ALL_SOUND) == "0" then return end
+    self:checkFiles()
+  end
   if self.state == "waiting" then
     local stacks = self:readStacks()
     if not stacks or stacks < TRIGGER_STACKS then return end

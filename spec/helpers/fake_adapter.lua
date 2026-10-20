@@ -6,7 +6,8 @@ M.OGG = "Interface\\AddOns\\KeysOfTheAngel\\media\\song.ogg"
 
 function M.new()
   local a = {
-    cvars = { Sound_DialogVolume = "1.0", Sound_MusicVolume = "0.4", Sound_EnableDialog = "1" },
+    cvars = { Sound_DialogVolume = "1.0", Sound_MusicVolume = "0.4", Sound_EnableDialog = "1",
+      Sound_EnableAllSound = "1" },
     setCalls = {}, played = {}, active = {}, stopped = {},
     stackCount = 0, secret = false, tauren = true, files = { [M.MP3] = true },
     popups = 0, db = {}, floor = 0, nextHandle = 100,
@@ -27,7 +28,8 @@ function M.new()
     a.cvars[name] = tostring(value)
     a.setCalls[#a.setCalls + 1] = { name = name, value = value }
   end
-  function a.fileExists(path) return a.files[path] == true end
+  -- Like the game: with all sound off, PlaySoundFile reports every file as missing.
+  function a.fileExists(path) return a.cvars.Sound_EnableAllSound ~= "0" and a.files[path] == true end
   function a.play(path)
     a.nextHandle = a.nextHandle + 1
     local h = a.nextHandle
