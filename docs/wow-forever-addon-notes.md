@@ -105,6 +105,19 @@ Probe: `KoaProbe` (throwaway, lived in the AddOns folder).
 - **Combat:** `GetUnitSpeed` values are **secret** in combat. A Plainsrunning scan by aura index finds nothing in
   combat, probably because the aura name is secret and can't be compared.
 
-Still open: whether `GetPlayerAuraBySpellID(1299038)` is readable in combat; whether a low floor (0.001) keeps a
-sound alive; a silent way to check that a file exists; whether a loading screen stops sounds; aura behavior when
+### Round 3 (same build, 2026-10-20)
+
+- **Alt-tab stops sounds.** With the game in the background (the author's default sound settings), a playing
+  `PlaySoundFile` sound stops and `C_Sound.IsPlaying` turns false; it doesn't resume on return. This also taints the
+  round 2 volume-0 results, which were taken while alt-tabbing.
+- **Floor:** at `Sound_DialogVolume` 0.001, without alt-tabbing, the sound kept playing for 10 s, stayed
+  `IsPlaying` true, and came back at its later position when the volume returned.
+- **Missing files:** `PlaySoundFile` on a missing `.ogg` or `.mp3` returns `willPlay` nil and no handle, with no
+  error. Play then `StopSound` in the same frame on an existing file made no audible blip.
+- **Combat drops Plainsrunning.** Entering combat at 30 stacks removed the aura (`GetPlayerAuraBySpellID` nil, not
+  secret), and it rebuilt from 1 stack after combat.
+- **`/reload`** after `persist`: a `SetCVar` in `PLAYER_LOGOUT` persisted (`PERSIST CHECK: expected 1 got 1`).
+
+Still open: whether a loading screen stops sounds; whether `PlaySoundFile` reports `willPlay` for an existing file
+during the login loading screen, with the game in the background, or with sound turned off; aura behavior when
 mounting, dying or on a taxi.
