@@ -2,6 +2,7 @@ package-as: KeysOfTheAngel
 
 ignore:
   - docs
+  - spec
   - .github
   - .claude
   - CLAUDE.md

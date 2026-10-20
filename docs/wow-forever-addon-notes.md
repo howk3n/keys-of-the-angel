@@ -88,7 +88,50 @@ Probe: `KoaProbe` (throwaway, lived in the AddOns folder).
 - Defaults seen: `Sound_MusicVolume` 0.4, `Sound_AmbienceVolume` 0.6, `Sound_DialogVolume` 1.0, others 1.0.
 - `C_Console.GetAllCommands` and `Enum.SoundChannel` are **missing**.
 - Supported audio formats (Retail, not re-checked): `.ogg` and `.mp3` inside the addon folder.
+- `PlaySoundFile` doesn't loop.
 
-Still open: secret values in combat and instances; whether sounds survive loading screens; aura behavior when
-walking, mounting, dying or on a taxi; `PlaySoundFile` looping (Retail: it doesn't, so a loop needs the track
-length and a timer).
+### Round 2 (build 1.60.1.70450, 2026-10-20)
+
+- **Song end:** `SOUNDKIT_FINISHED` registers but never fired for a `PlaySoundFile` sound. `C_Sound.IsPlaying(handle)`
+  exists and turned false 60.15 s into a 60 s file, so poll it to detect the end.
+- **Volume 0 stops sounds.** With `Sound_DialogVolume` at 0, `C_Sound.IsPlaying` went false within 10 s (once
+  immediately), and a fade to 0 and back up in combat never brought the sound back. Never write exactly 0.
+- **Music at 0** for 30 s: zone music came back when the volume was restored.
+- **`/reload`:** a sound keeps playing through it, and the old handle still reports `IsPlaying` true afterwards.
+- **Crash:** `Sound_DialogVolume` 0.5 and `Sound_MusicVolume` 0.1 set right before killing `Wow.exe` were **not** in
+  `WTF\Config.wtf` afterwards, so a `SetCVar` isn't written to disk right away. (Config.wtf's last write was
+  9 s after the preceding logout, around the next login.)
+- **Logout:** a `SetCVar` in `PLAYER_LOGOUT` sticks (Config.wtf held the restored value).
+- **Combat:** `GetUnitSpeed` values are **secret** in combat. A Plainsrunning scan by aura index finds nothing in
+  combat, probably because the aura name is secret and can't be compared.
+
+### Round 3 (same build, 2026-10-20)
+
+- **Alt-tab stops sounds.** With the game in the background (the author's default sound settings), a playing
+  `PlaySoundFile` sound stops and `C_Sound.IsPlaying` turns false; it doesn't resume on return. This also taints the
+  round 2 volume-0 results, which were taken while alt-tabbing.
+- **Floor:** at `Sound_DialogVolume` 0.001, without alt-tabbing, the sound kept playing for 10 s, stayed
+  `IsPlaying` true, and came back at its later position when the volume returned.
+- **Missing files:** `PlaySoundFile` on a missing `.ogg` or `.mp3` returns `willPlay` nil and no handle, with no
+  error. Play then `StopSound` in the same frame on an existing file made no audible blip.
+- **Combat drops Plainsrunning.** Entering combat at 30 stacks removed the aura (`GetPlayerAuraBySpellID` nil, not
+  secret), and it rebuilt from 1 stack after combat.
+- **`/reload`** after `persist`: a `SetCVar` in `PLAYER_LOGOUT` persisted (`PERSIST CHECK: expected 1 got 1`).
+
+### Round 4 and the in-game checklist (same build, 2026-10-20)
+
+- **File check timing:** `PlaySoundFile` reports `willPlay` true for an existing file at `PLAYER_LOGIN`, at
+  `PLAYER_ENTERING_WORLD` and while alt-tabbed. With `Sound_EnableAllSound` 0 it returns nil for **every** file.
+- **Background sound** is `Sound_EnableSoundWhenGameIsInBG` (0 on the author's client).
+- **Volume storage:** CVars are stored as float32 (`0.4` reads back `0.40000000596…`). `0.0004` read back as `0`.
+  One reading of `0.3667` came back `0.35`, which suggests the Sound panel snapping to 5% steps.
+- **Read-back matters:** comparing `GetCVar` against the exact value written made rounding look like a slider move,
+  and the saved Music setting drained to 0. Compare against what `GetCVar` reports right after `SetCVar`, with a
+  tolerance above half a 5% step.
+
+- **Disabled channel:** with `Sound_EnableDialog` 0, `PlaySoundFile` on `Dialog` returns `willPlay` nil for an
+  existing file; on `Master` it returns true. With the Dialog slider at 0 it still returns true. Check file existence
+  on `Master`.
+
+Still open: whether a loading screen stops sounds; whether volume exactly 0 stops a sound without alt-tabbing; aura
+behavior when mounting, dying or on a taxi.

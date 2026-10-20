@@ -1,0 +1,12 @@
+## Interface: 16001
+## Title: Keys of the Angel
+## Notes: Plays a song when Plainsrunning reaches full speed.
+## Author: howk3n
+## Version: @project-version@
+## SavedVariables: KeysOfTheAngelDB
+## X-Curse-Project-ID: 1756405
+
+src\core\volume.lua
+src\core\engine.lua
+src\wow\adapter.lua
+src\wow\main.lua

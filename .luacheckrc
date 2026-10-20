@@ -1,11 +1,15 @@
 std = "lua51"
 max_line_length = 120
-exclude_files = { ".release/", "libs/", "docs/" }
+exclude_files = { ".release/", "libs/", "docs/", ".superpowers/" }
 ignore = { "212/_" } -- unused argument named "_"
 
--- Add each WoW API global the addon reads here.
-read_globals = {
-  "CreateFrame", "UIParent", "C_Timer", "C_UnitAuras", "GetUnitSpeed", "PlayMusic", "StopMusic", "PlaySoundFile",
-  "StopSound", "InCombatLockdown", "IsMounted", "UnitOnTaxi", "issecretvalue", "Settings", "DEFAULT_CHAT_FRAME",
+files["spec/"] = {
+  globals = { "describe", "it", "before_each", "after_each", "assert", "arg" },
 }
-globals = { "KeysOfTheAngelDB", "SlashCmdList", "SLASH_KEYSOFTHEANGEL1" }
+
+-- The WoW layer may use the game API; the core may not.
+local wow = {
+  "CreateFrame", "C_Timer", "C_UnitAuras", "C_Sound", "GetTime", "GetCVar", "SetCVar", "C_CVar", "PlaySoundFile",
+  "StopSound", "UnitRace", "issecretvalue", "StaticPopup_Show", "UIParent", "OKAY",
+}
+files["src/wow/"] = { read_globals = wow, globals = { "KeysOfTheAngelDB", "StaticPopupDialogs" } }

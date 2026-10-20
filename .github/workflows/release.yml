@@ -1,0 +1,26 @@
+name: Release
+on:
+  push:
+    tags: ["v*"]
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      CF_API_KEY: ${{ secrets.CF_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Refuse to ship the placeholder song
+        run: |
+          if [ -f media/song.ogg ]; then echo "media/song.ogg must not ship"; exit 1; fi
+          actual="$(sha256sum media/song.mp3 | cut -d' ' -f1)"
+          placeholder="$(tr -d '\r\n' < .github/placeholder-song.sha256)"
+          if [ "$actual" = "$placeholder" ]; then echo "media/song.mp3 is still the placeholder"; exit 1; fi
+      - name: Install LuaJIT
+        run: sudo apt-get update && sudo apt-get install -y luajit
+      - name: Run tests
+        run: luajit spec/runner.lua spec/unit/*_spec.lua
+      - uses: BigWigsMods/packager@v2
